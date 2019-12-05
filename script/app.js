@@ -4,7 +4,7 @@
 'use strict';
 
 let mymap;
-let position;
+let position = [50.824644, 3.249585];
 var map;
 // https://www.n2yo.com/rest/v1/satellite/above/50.82803/3.26487/0/10/0/?apiKey=6MTZQ7-QW9KS9-X73GC5-47T0
 let url = 'https://www.n2yo.com/rest/v1/satellite/above/';
@@ -122,24 +122,27 @@ const initmap = function() {
     WE.tileLayer('http://tileserver.maptiler.com/nasa/{z}/{x}/{y}.jpg', options).addTo(earth);
 
     delete_watermark();
+    preselect_categories();
   }
 };
 
 const get_location = function() {
+  console.log('get position');
   //navigator.geolocation werkt niet tenzij je HTTPS protocol gebruikt -> combell hosting is HTTP
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function(pos) {
-      console.log(pos);
+  console.log(navigator.geolocation.getCurrentPosition);
+  navigator.geolocation.watchPosition(
+    function(pos) {
       position = [pos.coords.latitude, pos.coords.longitude];
       console.log('position: ' + position);
       initmap();
-    });
-  } else {
-    position = [55.824894, 3.249808];
-    console.log('Geolocation is not supported by this browser, defaulting to Kortijk');
-    console.log('position: ' + position);
-    initmap();
-  }
+    },
+    function(error) {
+      position = [50.824644, 3.249585];
+      console.log('Geolocation is not supported by this browser, defaulting to Kortijk');
+      console.log('position: ' + position);
+      initmap();
+    }
+  );
 };
 
 const select_option = function(object) {
@@ -186,9 +189,23 @@ const load_types = function() {
   }
 };
 
+const preselect_categories = function() {
+  let preselected = ['Brightest', 'ISS', 'Weather'];
+
+  var event = new Event('input', {
+    bubbles: true,
+    cancelable: true
+  });
+  setTimeout(function() {
+    for (let category of preselected) {
+      document.querySelector(`#${category}`).click();
+    }
+  }, 1500);
+};
+
 const init = function() {
   console.log('dom geladen');
-  //get_location();
   load_types();
+  get_location();
 };
 document.addEventListener('DOMContentLoaded', init);
